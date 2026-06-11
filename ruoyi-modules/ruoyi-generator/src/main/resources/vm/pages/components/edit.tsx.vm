@@ -1,0 +1,258 @@
+import { observer, useLocalObservable } from "mobx-react-lite";
+import { useContext, useEffect } from "react";
+#set($components = [])
+#foreach($column in $columns)
+#if($column.htmlType == "input")
+    #if(!$components.contains("ProFormText"))
+        #set($ig = $components.add("ProFormText"))
+    #end
+#elseif($column.htmlType == "radio")
+    #if(!$components.contains("ProFormRadio"))
+        #set($ig = $components.add("ProFormRadio"))
+    #end
+#elseif($column.htmlType == "select")
+    #if(!$components.contains("ProFormSelect"))
+        #set($ig = $components.add("ProFormSelect"))
+    #end
+#elseif($column.htmlType == "textarea")
+    #if(!$components.contains("ProFormTextArea"))
+        #set($ig = $components.add("ProFormTextArea"))
+    #end
+#elseif($column.htmlType == "number")
+    #if(!$components.contains("ProFormDigit"))
+        #set($ig = $components.add("ProFormDigit"))
+    #end
+#elseif($column.htmlType == "date")
+    #if(!$components.contains("ProFormDatePicker"))
+        #set($ig = $components.add("ProFormDatePicker"))
+    #end
+#end
+#end
+import {
+    DrawerForm,
+#foreach($component in $components)
+    $component,
+#end
+} from "@ant-design/pro-components";
+import { Form } from "antd";
+import { useQueries, useMutation } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
+import createState from "../mobx/edit";
+import * as api from "#src/api/${moduleName}/${businessName}";
+
+interface EditProps {
+    title?: string
+    ${pkColumn.javaField}?: string | number
+    dictMap?: {
+        [k: string]: {
+            label: string
+            value: string
+        }[]
+    }
+
+    open?: boolean
+    onClose?: (refresh?: boolean) => void
+}
+
+export default observer(({ ${pkColumn.javaField},#if($dicts != "") dictMap,#end open = true, onClose, ...props }: EditProps) => {
+    const { t } = useTranslation();
+    const [form] = Form.useForm<${ModuleName}.${BusinessName}>();
+    const context = useLocalObservable(createState({ ${pkColumn.javaField} }));
+
+    const [${businessName}Data] = useQueries({
+        queries: [
+            {
+                queryKey: ["form", ${pkColumn.javaField}],
+                queryFn: async () => {
+                    if (!${pkColumn.javaField}) {
+                        return null;
+                    }
+                    const { data } = await api.getById(${pkColumn.javaField});
+                    return data;
+                }
+            },
+        ]
+    });
+
+    const createMutation = useMutation({
+        mutationFn: async (data: ${ModuleName}.${BusinessName}) => {
+            const { code, message } = await api.create(data);
+            if (code !== 200) {
+                window.$message?.error(message);
+                throw new Error(message);
+            }
+        },
+    });
+
+    const updateMutation = useMutation({
+        mutationFn: async (data: ${ModuleName}.${BusinessName}) => {
+            const { code, message } = await api.update(data);
+            if (code !== 200) {
+                window.$message?.error(message);
+                throw new Error(message);
+            }
+        },
+    });
+
+    const onFinish = async (values: ${ModuleName}.${BusinessName}) => {
+        /* 有 id 则为修改，否则为新增 */
+        if (${pkColumn.javaField}) {
+            await updateMutation.mutateAsync({ ...form.getFieldsValue(true) });
+            window.$message?.success(t("common.updateSuccess"));
+        }
+        else {
+            await createMutation.mutateAsync(values);
+            window.$message?.success(t("common.addSuccess"));
+        }
+        /* 刷新表格 */
+        onClose?.(true);
+        // 不返回不会关闭弹框
+        return true;
+    };
+
+    useEffect(() => {
+        if (open) {
+            if (${businessName}Data.data) {
+                form.setFieldsValue(${businessName}Data.data);
+                context.update(${businessName}Data.data);
+                return;
+            }
+            form.resetFields();
+        }
+    }, [open, ${businessName}Data.data]);
+
+    return (
+        <DrawerForm<${ModuleName}.${BusinessName}>
+            {...props}
+            open={open}
+            onValuesChange={(changed) => context.update(changed)}
+            onOpenChange={(visible) => {
+                if (visible === false) {
+                    onClose?.();
+                }
+            }}
+            width="600px"
+            resize={true}
+            labelCol={{ span: 8 }}
+            wrapperCol={{ span: 24 }}
+            layout="horizontal"
+            form={form}
+            autoFocusFirstInput
+            drawerProps={{
+                destroyOnHidden: true,
+            }}
+            onFinish={onFinish}
+            initialValues={{
+                status: '0',
+            }}
+        >
+    #foreach($column in $columns)
+    #set($field=$column.javaField)
+    #if(($column.insert || $column.edit) && !$column.pk)
+    #set($parentheseIndex=$column.columnComment.indexOf("（"))
+    #if($parentheseIndex != -1)
+    #set($comment=$column.columnComment.substring(0, $parentheseIndex))
+    #else
+    #set($comment=$column.columnComment)
+    #end
+    #set($dictType=$column.dictType)
+        #if($column.htmlType == "radio")
+            <ProFormRadio.Group
+                name="$field"
+                label="$comment"
+                radioType="button"
+                placeholder="请选择$comment"
+                readonly={context.isDisabled([ #if($column.insert)'insert',#end #if($column.edit)'edit',#end ])}
+                #if($column.isRequired == "1")
+                allowClear={false}
+                rules={[
+                    { required: true },
+                ]}
+                #end
+            #if($column.dictType != "")
+                options={dictMap?.["$column.dictType"]}
+            #elseif($column.readConverterExp() != "")
+                options={[
+                    $column.readConverterExp()]}
+            #end
+            />
+        #elseif($column.htmlType == "select")
+            <ProFormSelect
+                name="$field"
+                label="$comment"
+                placeholder="请选择$comment"
+                readonly={context.isDisabled([ #if($column.insert)'insert',#end #if($column.edit)'edit',#end ])}
+                #if($column.isRequired == "1")
+                allowClear={false}
+                rules={[
+                    { required: true },
+                ]}
+                #end
+                #if($column.dictType != "")
+                options={dictMap?.["$column.dictType"]}
+                #else
+                options={[
+                #foreach($opt in $column.readConverterOpt())
+                    { value: "$opt.value", label: "$opt.label" },
+                #end
+                ]}
+                #end
+            />
+        #elseif($column.htmlType == "textarea")
+            <ProFormTextArea
+                name="$field"
+                label="$comment"
+                placeholder="请输入$comment"
+                readonly={context.isDisabled([ #if($column.insert)'insert',#end #if($column.edit)'edit',#end ])}
+                allowClear={false}
+                #if($column.isRequired == "1")
+                rules={[
+                    { required: true },
+                ]}
+                #end
+            />
+        #elseif($column.htmlType == "number")
+            <ProFormDigit
+                name="$field"
+                label="$comment"
+                placeholder="请输入$comment"
+                readonly={context.isDisabled([ #if($column.insert)'insert',#end #if($column.edit)'edit',#end ])}
+                #if($column.isRequired == "1")
+                allowClear={false}
+                rules={[
+                    { required: true },
+                ]}
+                #end
+            />
+        #elseif($column.htmlType == "date")
+            <ProFormDatePicker
+                name="$field"
+                label="$comment"
+                placeholder="请输入$comment"
+                readonly={context.isDisabled([ #if($column.insert)'insert',#end #if($column.edit)'edit',#end ])}
+                #if($column.isRequired == "1")
+                allowClear={false}
+                rules={[
+                    { required: true },
+                ]}
+                #end
+            />
+        #else
+            <ProFormText
+                name="$field"
+                label="$comment"
+                placeholder="请输入$comment"
+                readonly={context.isDisabled([ #if($column.insert)'insert',#end #if($column.edit)'edit',#end ])}
+                allowClear={false}
+                #if($column.isRequired == "1")
+                rules={[
+                    { required: true },
+                ]}
+                #end
+            />
+        #end
+    #end
+    #end
+        </DrawerForm>
+    );
+});

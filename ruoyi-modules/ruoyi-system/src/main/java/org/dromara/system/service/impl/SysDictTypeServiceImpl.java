@@ -28,11 +28,15 @@ import org.dromara.system.domain.vo.SysDictTypeVo;
 import org.dromara.system.mapper.SysDictDataMapper;
 import org.dromara.system.mapper.SysDictTypeMapper;
 import org.dromara.system.service.ISysDictTypeService;
+import org.jspecify.annotations.NonNull;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.interceptor.KeyGenerator;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.lang.reflect.Method;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -106,6 +110,28 @@ public class SysDictTypeServiceImpl implements ISysDictTypeService, DictService 
     public List<SysDictDataVo> selectDictDataByType(String dictType) {
         List<SysDictDataVo> dictDatas = dictDataMapper.selectDictDataByType(dictType);
         return CollUtil.isNotEmpty(dictDatas) ? dictDatas : null;
+    }
+
+    /**
+     * 根据字典类型查询字典数据
+     *
+     * @param dictTypes 字典类型集合
+     * @return 字典数据集合信息
+     */
+    @Cacheable(cacheNames = CacheNames.SYS_DICT, keyGenerator = "dictKeyGenerator")
+    @Override
+    public Map<String, List<SysDictDataVo>> selectDictDataByTypes(String[] dictTypes) {
+        if (dictTypes == null || dictTypes.length == 0) {
+            return Collections.emptyMap();
+        }
+        List<SysDictDataVo> dataList = dictDataMapper.selectDictDataByTypes(dictTypes);
+        Map<String, List<SysDictDataVo>> data = new  HashMap<>();
+        for (String dictType : dictTypes) {
+            data.put(dictType, dataList.stream()
+                .filter(x -> Objects.equals(x.getDictType(), dictType))
+                .toList());
+        }
+        return data;
     }
 
     /**
@@ -316,4 +342,12 @@ public class SysDictTypeServiceImpl implements ISysDictTypeService, DictService 
         return BeanUtil.copyToList(list, DictDataDTO.class);
     }
 
+    @Component("dictKeyGenerator")
+    public static class DictKeyGenerator implements KeyGenerator {
+        @Override
+        public Object generate(Object target, Method method, Object... params) {
+            String[] dictTypes = (String[]) params[0];
+            return "[" + Arrays.stream(dictTypes).sorted().collect(Collectors.joining(",")) + "]";
+        }
+    }
 }

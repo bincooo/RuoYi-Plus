@@ -5,6 +5,7 @@ import org.dromara.common.mybatis.core.mapper.BaseMapperPlus;
 import org.dromara.system.domain.SysDictData;
 import org.dromara.system.domain.vo.SysDictDataVo;
 
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -24,6 +25,19 @@ public interface SysDictDataMapper extends BaseMapperPlus<SysDictData, SysDictDa
         return selectVoList(
             new LambdaQueryWrapper<SysDictData>()
                 .eq(SysDictData::getDictType, dictType)
+                .orderByAsc(SysDictData::getDictSort));
+    }
+
+    /**
+     * 根据字典类型查询字典数据列表
+     *
+     * @param dictTypes 字典类型集合
+     * @return 符合条件的字典数据列表
+     */
+    default List<SysDictDataVo> selectDictDataByTypes(String[] dictTypes) {
+        return selectVoList(
+            new LambdaQueryWrapper<SysDictData>()
+                .in(SysDictData::getDictType, (Object[]) dictTypes)
                 .orderByAsc(SysDictData::getDictSort));
     }
 }

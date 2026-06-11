@@ -11,6 +11,10 @@ import org.apache.ibatis.type.JdbcType;
 import org.dromara.common.core.utils.StringUtils;
 import org.dromara.common.mybatis.core.domain.BaseEntity;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
 /**
  * 代码生成业务字段表 gen_table_column
  *
@@ -203,18 +207,33 @@ public class GenTableColumn extends BaseEntity {
         return StringUtils.equalsAnyIgnoreCase(javaField, "parentId", "orderNum", "remark");
     }
 
+    public List<Map<String, String>> readConverterOpt() {
+        String remarks = StringUtils.substringBetween(this.columnComment, "（", "）");
+        List<Map<String, String>> options = new ArrayList<>();
+        if (StringUtils.isNotEmpty(remarks)) {
+            for (String value : remarks.split(" ")) {
+                if (StringUtils.isNotEmpty(value)) {
+                    String startStr = value.substring(0, 1);
+                    String endStr = value.substring(1);
+                    options.add(Map.of("value", startStr, "label", endStr));
+                }
+            }
+        }
+        return options;
+    }
+
     public String readConverterExp() {
         String remarks = StringUtils.substringBetween(this.columnComment, "（", "）");
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sbr = new StringBuilder();
         if (StringUtils.isNotEmpty(remarks)) {
             for (String value : remarks.split(" ")) {
                 if (StringUtils.isNotEmpty(value)) {
                     Object startStr = value.subSequence(0, 1);
                     String endStr = value.substring(1);
-                    sb.append(StringUtils.EMPTY).append(startStr).append("=").append(endStr).append(StringUtils.SEPARATOR);
+                    sbr.append(StringUtils.EMPTY).append(startStr).append("=").append(endStr).append(StringUtils.SEPARATOR);
                 }
             }
-            return sb.deleteCharAt(sb.length() - 1).toString();
+            return sbr.deleteCharAt(sbr.length() - 1).toString();
         } else {
             return this.columnComment;
         }

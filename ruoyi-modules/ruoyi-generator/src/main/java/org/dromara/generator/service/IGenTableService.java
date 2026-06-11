@@ -138,4 +138,11 @@ public interface IGenTableService {
      * @param genTable 业务信息
      */
     void validateEdit(GenTable genTable);
+
+    /**
+     * 获取业务表的拓展参数
+     * @param tableId 表Id
+     * @return 数据
+     */
+    Map<String, Object> selectOptionsById(Long tableId);
 }

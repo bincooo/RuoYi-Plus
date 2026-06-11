@@ -170,9 +170,9 @@ public class FlwSpelServiceImpl implements IFlwSpelService {
         params.put("endTime", taskQuery.getEndTime());
         TableDataInfo<FlowSpelVo> page = this.queryPageList(bo, pageQuery);
         // 使用封装的字段映射方法进行转换
-        List<TaskAssigneeDTO.TaskHandler> handlers = TaskAssigneeDTO.convertToHandlerList(page.getRows(),
+        List<TaskAssigneeDTO.TaskHandler> handlers = TaskAssigneeDTO.convertToHandlerList(page.getData().list(),
             FlowSpelVo::getViewSpel, item -> "", FlowSpelVo::getRemark, item -> "", FlowSpelVo::getCreateTime);
-        return new TaskAssigneeDTO(page.getTotal(), handlers);
+        return new TaskAssigneeDTO(page.getData().total(), handlers);
     }
 
     /**

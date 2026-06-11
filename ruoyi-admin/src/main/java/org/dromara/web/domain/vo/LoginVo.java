@@ -14,13 +14,13 @@ public class LoginVo {
     /**
      * 授权令牌
      */
-    @JsonProperty("access_token")
+    @JsonProperty("token")
     private String accessToken;
 
     /**
      * 刷新令牌
      */
-    @JsonProperty("refresh_token")
+//    @JsonProperty("refresh_token")
     private String refreshToken;
 
     /**

@@ -19,9 +19,7 @@ import org.dromara.system.service.ISysDictTypeService;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 /**
  * 数据字典信息
@@ -78,6 +76,20 @@ public class SysDictDataController extends BaseController {
         List<SysDictDataVo> data = dictTypeService.selectDictDataByType(dictType);
         if (ObjectUtil.isNull(data)) {
             data = new ArrayList<>();
+        }
+        return R.ok(data);
+    }
+
+    /**
+     * 根据字典类型查询字典数据信息
+     *
+     * @param dictTypes 字典类型集合
+     */
+    @GetMapping("/types/{dictTypes}")
+    public R<Map<String, List<SysDictDataVo>>> dictList(@PathVariable String[] dictTypes) {
+        Map<String, List<SysDictDataVo>> data = dictTypeService.selectDictDataByTypes(dictTypes);
+        if (ObjectUtil.isNull(data)) {
+            data = new HashMap<>();
         }
         return R.ok(data);
     }

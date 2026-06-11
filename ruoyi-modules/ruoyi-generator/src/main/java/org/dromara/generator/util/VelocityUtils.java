@@ -7,7 +7,6 @@ import org.dromara.common.mybatis.enums.DataBaseType;
 import org.dromara.generator.constant.GenConstants;
 import org.dromara.common.core.utils.DateUtils;
 import org.dromara.common.core.utils.StringUtils;
-import org.dromara.common.json.utils.JsonUtils;
 import org.dromara.common.mybatis.helper.DataBaseHelper;
 import org.dromara.generator.domain.GenTable;
 import org.dromara.generator.domain.GenTableColumn;
@@ -35,6 +34,8 @@ public class VelocityUtils {
      */
     private static final String MYBATIS_PATH = "main/resources/mapper";
 
+    private static final String RESOURCES_PATH = "main/resources";
+
     /**
      * 默认上级菜单，系统工具
      */
@@ -59,6 +60,7 @@ public class VelocityUtils {
         velocityContext.put("ClassName", genTable.getClassName());
         velocityContext.put("className", StringUtils.uncapitalize(genTable.getClassName()));
         velocityContext.put("moduleName", genTable.getModuleName());
+        velocityContext.put("ModuleName", StringUtils.capitalize(genTable.getModuleName()));
         velocityContext.put("BusinessName", StringUtils.capitalize(genTable.getBusinessName()));
         velocityContext.put("businessName", genTable.getBusinessName());
         velocityContext.put("basePackage", getPackagePrefix(packageName));
@@ -79,15 +81,13 @@ public class VelocityUtils {
     }
 
     public static void setMenuVelocityContext(VelocityContext context, GenTable genTable) {
-        String options = genTable.getOptions();
-        Dict paramsObj = JsonUtils.parseMap(options);
+        Dict paramsObj = new Dict(genTable.getOptions());
         String parentMenuId = getParentMenuId(paramsObj);
         context.put("parentMenuId", parentMenuId);
     }
 
     public static void setTreeVelocityContext(VelocityContext context, GenTable genTable) {
-        String options = genTable.getOptions();
-        Dict paramsObj = JsonUtils.parseMap(options);
+        Dict paramsObj = new Dict(genTable.getOptions());
         String treeCode = getTreecode(paramsObj);
         String treeParentCode = getTreeParentCode(paramsObj);
         String treeName = getTreeName(paramsObj);
@@ -131,10 +131,13 @@ public class VelocityUtils {
         }
         templates.add("vm/ts/api.ts.vm");
         templates.add("vm/ts/types.ts.vm");
+        templates.add("vm/pages/columns.ts.vm");
         if (GenConstants.TPL_CRUD.equals(tplCategory)) {
-            templates.add("vm/vue/index.vue.vm");
+            templates.add("vm/pages/index.tsx.vm");
+            templates.add("vm/pages/components/edit.tsx.vm");
+            templates.add("vm/pages/mobx/edit.ts.vm");
         } else if (GenConstants.TPL_TREE.equals(tplCategory)) {
-            templates.add("vm/vue/index-tree.vue.vm");
+//            templates.add("vm/views/index-tree.vue.vm");
         }
         return templates;
     }
@@ -156,7 +159,7 @@ public class VelocityUtils {
 
         String javaPath = PROJECT_PATH + "/" + StringUtils.replace(packageName, ".", "/");
         String mybatisPath = MYBATIS_PATH + "/" + moduleName;
-        String vuePath = "vue";
+        String sqlPath = RESOURCES_PATH + "/sql";
 
         if (template.contains("domain.java.vm")) {
             fileName = StringUtils.format("{}/domain/{}.java", javaPath, className);
@@ -178,15 +181,19 @@ public class VelocityUtils {
         } else if (template.contains("mapper.xml.vm")) {
             fileName = StringUtils.format("{}/{}Mapper.xml", mybatisPath, className);
         } else if (template.contains("sql.vm")) {
-            fileName = businessName + "Menu.sql";
+            fileName = StringUtils.format("{}/{}_menu.sql", sqlPath, businessName);
         } else if (template.contains("api.ts.vm")) {
-            fileName = StringUtils.format("{}/api/{}/{}/index.ts", vuePath, moduleName, businessName);
+            fileName = StringUtils.format("api/{}/{}/index.ts", moduleName, businessName);
         } else if (template.contains("types.ts.vm")) {
-            fileName = StringUtils.format("{}/api/{}/{}/types.ts", vuePath, moduleName, businessName);
-        } else if (template.contains("index.vue.vm")) {
-            fileName = StringUtils.format("{}/views/{}/{}/index.vue", vuePath, moduleName, businessName);
-        } else if (template.contains("index-tree.vue.vm")) {
-            fileName = StringUtils.format("{}/views/{}/{}/index.vue", vuePath, moduleName, businessName);
+            fileName = StringUtils.format("types/{}/{}.d.ts", moduleName, businessName);
+        } else if (template.contains("pages/index.tsx.vm")) {
+            fileName = StringUtils.format("pages/{}/{}/index.tsx", moduleName, businessName);
+        } else if (template.contains("pages/columns.ts.vm")) {
+            fileName = StringUtils.format("pages/{}/{}/columns.ts", moduleName, businessName);
+        } else if (template.contains("pages/components/edit.tsx.vm")) {
+            fileName = StringUtils.format("pages/{}/{}/components/edit.tsx", moduleName, businessName);
+        } else if (template.contains("pages/mobx/edit.ts.vm")) {
+            fileName = StringUtils.format("pages/{}/{}/mobx/edit.ts", moduleName, businessName);
         }
         return fileName;
     }
@@ -325,8 +332,7 @@ public class VelocityUtils {
      * @return 展开按钮列序号
      */
     public static int getExpandColumn(GenTable genTable) {
-        String options = genTable.getOptions();
-        Dict paramsObj = JsonUtils.parseMap(options);
+        Dict paramsObj = Dict.of(genTable.getOptions());
         String treeName = paramsObj.getStr(GenConstants.TREE_NAME);
         int num = 0;
         for (GenTableColumn column : genTable.getColumns()) {

@@ -31,7 +31,7 @@ public class R<T> implements Serializable {
 
     private int code;
 
-    private String msg;
+    private String message;
 
     private T data;
 
@@ -96,7 +96,7 @@ public class R<T> implements Serializable {
         R<T> r = new R<>();
         r.setCode(code);
         r.setData(data);
-        r.setMsg(msg);
+        r.setMessage(msg);
         return r;
     }
 

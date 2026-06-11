@@ -6,6 +6,7 @@ import cn.hutool.core.lang.Dict;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.dynamic.datasource.annotation.DS;
 import com.baomidou.dynamic.datasource.annotation.DSTransactional;
+import com.baomidou.dynamic.datasource.toolkit.DynamicDataSourceContextHolder;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
@@ -24,10 +25,10 @@ import org.dromara.common.core.utils.SpringUtils;
 import org.dromara.common.core.utils.StreamUtils;
 import org.dromara.common.core.utils.StringUtils;
 import org.dromara.common.core.utils.file.FileUtils;
-import org.dromara.common.json.utils.JsonUtils;
 import org.dromara.common.mybatis.core.page.PageQuery;
 import org.dromara.common.mybatis.core.page.TableDataInfo;
 import org.dromara.common.mybatis.utils.IdGeneratorUtil;
+import org.dromara.generator.config.GenConfig;
 import org.dromara.generator.constant.GenConstants;
 import org.dromara.generator.domain.GenTable;
 import org.dromara.generator.domain.GenTableColumn;
@@ -39,10 +40,7 @@ import org.dromara.generator.util.VelocityUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.StringWriter;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.zip.ZipEntry;
@@ -126,7 +124,16 @@ public class GenTableServiceImpl implements IGenTableService {
         if (CollUtil.isEmpty(tablesMap)) {
             return TableDataInfo.build();
         }
-        List<String> tableNames = baseMapper.selectTableNameList(genTable.getDataName());
+        String dataName = genTable.getDataName();
+        List<String> tableNames = baseMapper.selectTableNameList(dataName);
+        if (StringUtils.isEmpty(tableName)) {
+            dataName = DynamicDataSourceContextHolder.peek();
+            if (StringUtils.isEmpty(dataName)) {
+                dataName = "master";
+            }
+        }
+        final String finalDataName = dataName;
+
         String[] tableArrays;
         if (CollUtil.isNotEmpty(tableNames)) {
             tableArrays = tableNames.toArray(new String[0]);
@@ -160,6 +167,7 @@ public class GenTableServiceImpl implements IGenTableService {
                 GenTable gen = new GenTable();
                 gen.setTableName(x.getName());
                 gen.setTableComment(x.getComment());
+                gen.setDataName(finalDataName);
                 // postgresql的表元数据没有创建时间这个东西(好奇葩) 只能new Date代替
                 gen.setCreateTime(ObjectUtil.defaultIfNull(x.getCreateTime(), new Date()));
                 gen.setUpdateTime(x.getUpdateTime());
@@ -222,8 +230,8 @@ public class GenTableServiceImpl implements IGenTableService {
     @Transactional(rollbackFor = Exception.class)
     @Override
     public void updateGenTable(GenTable genTable) {
-        String options = JsonUtils.toJsonString(genTable.getParams());
-        genTable.setOptions(options);
+//        String options = JsonUtils.toJsonString(genTable.getParams());
+//        genTable.setOptions(options);
         int row = baseMapper.updateById(genTable);
         if (row > 0) {
             for (GenTableColumn cenTableColumn : genTable.getColumns()) {
@@ -323,7 +331,8 @@ public class GenTableServiceImpl implements IGenTableService {
         for (int i = 0; i < 6; i++) {
             menuIds.add(IdGeneratorUtil.nextLongId());
         }
-        table.setMenuIds(menuIds);
+         table.setMenuIds(menuIds);
+
         // 设置主键列信息
         setPkColumn(table);
         VelocityInitializer.initVelocity();
@@ -366,6 +375,11 @@ public class GenTableServiceImpl implements IGenTableService {
     public void generatorCode(Long tableId) {
         // 查询表信息
         GenTable table = baseMapper.selectGenTableById(tableId);
+        List<Long> menuIds = new ArrayList<>();
+        for (int i = 0; i < 6; i++) {
+            menuIds.add(IdGeneratorUtil.nextLongId());
+        }
+        table.setMenuIds(menuIds);
         // 设置主键列信息
         setPkColumn(table);
 
@@ -376,19 +390,36 @@ public class GenTableServiceImpl implements IGenTableService {
         // 获取模板列表
         List<String> templates = VelocityUtils.getTemplateList(table.getTplCategory(), table.getDataName());
         for (String template : templates) {
-            if (!StringUtils.containsAny(template, "sql.vm", "api.ts.vm", "types.ts.vm", "index.vue.vm", "index-tree.vue.vm")) {
-                // 渲染模板
-                StringWriter sw = new StringWriter();
-                Template tpl = Velocity.getTemplate(template, Constants.UTF8);
-                tpl.merge(context, sw);
-                try {
-                    String path = getGenPath(table, template);
-                    FileUtils.writeUtf8String(sw.toString(), path);
-                } catch (Exception e) {
-                    throw new ServiceException("渲染模板失败，表名：" + table.getTableName());
-                }
+            // 渲染模板
+            StringWriter sw = new StringWriter();
+            Template tpl = Velocity.getTemplate(template, Constants.UTF8);
+            tpl.merge(context, sw);
+            try {
+                String path = getGenPath(table, template);
+                FileUtils.writeUtf8String(sw.toString(), path);
+            } catch (Exception e) {
+                throw new ServiceException("渲染模板失败，表名：" + table.getTableName());
             }
         }
+
+        Map<String, Object> options = Optional.of(table)
+            .map(GenTable::getOptions)
+            .orElse(new HashMap<>());
+        options.put("templates", templates);
+        if (!options.containsKey("pages")) {
+            options.put("pages", Map.of(
+                "/", Map.of(
+                    "name", "主页",
+                    "component", String.format("pages/%s/%s", table.getModuleName(), table.getBusinessName())
+                ),
+                "/edit", Map.of(
+                    "name", "编辑页",
+                    "component", String.format("pages/%s/%s/components/edit", table.getModuleName(), table.getBusinessName())
+                )
+            ));
+        }
+        table.setOptions(options);
+        baseMapper.updateById(table);
     }
 
     /**
@@ -505,8 +536,10 @@ public class GenTableServiceImpl implements IGenTableService {
     @Override
     public void validateEdit(GenTable genTable) {
         if (GenConstants.TPL_TREE.equals(genTable.getTplCategory())) {
-            String options = JsonUtils.toJsonString(genTable.getParams());
-            Dict paramsObj = JsonUtils.parseMap(options);
+            Dict paramsObj = new Dict();
+            if (genTable.getOptions() != null) {
+                paramsObj.putAll(genTable.getOptions());
+            }
             if (StringUtils.isEmpty(paramsObj.getStr(GenConstants.TREE_CODE))) {
                 throw new ServiceException("树编码字段不能为空");
             } else if (StringUtils.isEmpty(paramsObj.getStr(GenConstants.TREE_PARENT_CODE))) {
@@ -544,7 +577,10 @@ public class GenTableServiceImpl implements IGenTableService {
      * @param genTable 设置后的生成对象
      */
     public void setTableFromOptions(GenTable genTable) {
-        Dict paramsObj = JsonUtils.parseMap(genTable.getOptions());
+        Dict paramsObj = new Dict();
+        if (genTable.getOptions() != null) {
+            paramsObj.putAll(genTable.getOptions());
+        }
         if (ObjectUtil.isNotNull(paramsObj)) {
             String treeCode = paramsObj.getStr(GenConstants.TREE_CODE);
             String treeParentCode = paramsObj.getStr(GenConstants.TREE_PARENT_CODE);
@@ -560,6 +596,18 @@ public class GenTableServiceImpl implements IGenTableService {
         }
     }
 
+    @Override
+    public Map<String, Object> selectOptionsById(Long tableId) {
+        if (tableId == null) {
+            return Map.of();
+        }
+        GenTable table = baseMapper.selectGenTableById(tableId);
+        if (table == null) {
+            return Map.of();
+        }
+        return table.getOptions();
+    }
+
     /**
      * 获取代码生成地址
      *
@@ -569,10 +617,19 @@ public class GenTableServiceImpl implements IGenTableService {
      */
     public static String getGenPath(GenTable table, String template) {
         String genPath = table.getGenPath();
-        if (StringUtils.equals(genPath, "/")) {
-            return System.getProperty("user.dir") + File.separator + "src" + File.separator + VelocityUtils.getFileName(template, table);
+        if (template.contains("vm/java/") ||  template.contains("vm/xml/mapper") || template.contains("vm/sql/")) {
+            genPath = GenConfig.javaPath;
         }
-        return genPath + File.separator + VelocityUtils.getFileName(template, table);
+        if (template.contains("vm/pages/") || template.contains("vm/ts/")) {
+            genPath = GenConfig.reactPath;
+        }
+        if (StringUtils.isEmpty(genPath) || StringUtils.equals(genPath, "/")) {
+            genPath = System.getProperty("user.dir") + File.separator + "loc";
+            if (template.contains("vm/pages/") || template.contains("vm/ts/")) {
+                genPath += File.separator + "react";
+            }
+        }
+        return genPath + File.separator + "src" + File.separator + VelocityUtils.getFileName(template, table);
     }
 }
 

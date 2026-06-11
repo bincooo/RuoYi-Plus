@@ -61,14 +61,14 @@ public class SysMenu extends BaseEntity {
     private String queryParam;
 
     /**
-     * 是否为外链（0是 1否）
+     * 是否为外链（1是 0否）
      */
     private String isFrame;
 
     /**
-     * 是否缓存（0缓存 1不缓存）
+     * 是否缓存（1缓存 0不缓存）
      */
-    private String isCache;
+    private String keepAlive;
 
     /**
      * 类型（M目录 C菜单 F按钮）
@@ -149,7 +149,7 @@ public class SysMenu extends BaseEntity {
      * 获取组件信息
      */
     public String getComponentInfo() {
-        String component = SystemConstants.LAYOUT;
+        String component = null;
         if (StringUtils.isNotEmpty(this.component) && !isMenuFrame()) {
             component = this.component;
         } else if (StringUtils.isEmpty(this.component) && !Constants.TOP_PARENT_ID.equals(getParentId()) && isInnerLink()) {
@@ -164,7 +164,7 @@ public class SysMenu extends BaseEntity {
      * 是否为菜单内部跳转
      */
     public boolean isMenuFrame() {
-        return Constants.TOP_PARENT_ID.equals(getParentId()) && SystemConstants.TYPE_MENU.equals(menuType) && isFrame.equals(SystemConstants.NO_FRAME);
+        return Constants.TOP_PARENT_ID.equals(getParentId()) && SystemConstants.TYPE_MENU.equals(menuType) && isFrame.equals(SystemConstants.YES_FRAME);
     }
 
     /**
@@ -181,6 +181,9 @@ public class SysMenu extends BaseEntity {
         return !Constants.TOP_PARENT_ID.equals(getParentId()) && SystemConstants.TYPE_DIR.equals(menuType);
     }
 
+    public boolean isPermButton() {
+        return !Constants.TOP_PARENT_ID.equals(getParentId()) && SystemConstants.TYPE_BUTTON.equals(menuType);
+    }
     /**
      * 内链域名特殊字符替换
      */

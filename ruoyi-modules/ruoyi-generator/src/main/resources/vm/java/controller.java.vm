@@ -42,8 +42,8 @@ public class ${ClassName}Controller extends BaseController {
     /**
      * 查询${functionName}列表
      */
-    @SaCheckPermission("${permissionPrefix}:list")
-    @GetMapping("/list")
+    @SaCheckPermission("${permissionPrefix}:page")
+    @GetMapping("/page")
 #if($table.crud)
     public TableDataInfo<${ClassName}Vo> list(${ClassName}Bo bo, PageQuery pageQuery) {
         return ${className}Service.queryPageList(bo, pageQuery);
@@ -71,7 +71,7 @@ public class ${ClassName}Controller extends BaseController {
      *
      * @param ${pkColumn.javaField} 主键
      */
-    @SaCheckPermission("${permissionPrefix}:query")
+    @SaCheckPermission("${permissionPrefix}:page")
     @GetMapping("/{${pkColumn.javaField}}")
     public R<${ClassName}Vo> getInfo(@NotNull(message = "主键不能为空")
                                      @PathVariable ${pkColumn.javaType} ${pkColumn.javaField}) {
@@ -81,7 +81,7 @@ public class ${ClassName}Controller extends BaseController {
     /**
      * 新增${functionName}
      */
-    @SaCheckPermission("${permissionPrefix}:add")
+    @SaCheckPermission("${permissionPrefix}:create")
     @Log(title = "${functionName}", businessType = BusinessType.INSERT)
     @RepeatSubmit()
     @PostMapping()
@@ -92,7 +92,7 @@ public class ${ClassName}Controller extends BaseController {
     /**
      * 修改${functionName}
      */
-    @SaCheckPermission("${permissionPrefix}:edit")
+    @SaCheckPermission("${permissionPrefix}:update")
     @Log(title = "${functionName}", businessType = BusinessType.UPDATE)
     @RepeatSubmit()
     @PutMapping()
@@ -105,7 +105,7 @@ public class ${ClassName}Controller extends BaseController {
      *
      * @param ${pkColumn.javaField}s 主键串
      */
-    @SaCheckPermission("${permissionPrefix}:remove")
+    @SaCheckPermission("${permissionPrefix}:delete")
     @Log(title = "${functionName}", businessType = BusinessType.DELETE)
     @DeleteMapping("/{${pkColumn.javaField}s}")
     public R<Void> remove(@NotEmpty(message = "主键不能为空")

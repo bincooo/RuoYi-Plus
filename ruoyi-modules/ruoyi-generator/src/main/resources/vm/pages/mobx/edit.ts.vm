@@ -1,0 +1,44 @@
+import { action, makeObservable, observable, computed } from "mobx";
+import equal from 'fast-deep-equal';
+
+class State {
+
+    private readonly _initialize: ${ModuleName}.${BusinessName};
+
+    @observable
+    data: ${ModuleName}.${BusinessName} = {};
+
+    constructor(initialize: ${ModuleName}.${BusinessName}) {
+        this._initialize = initialize;
+        this.data = {...initialize};
+        makeObservable(this);
+    }
+
+    update(changed: ${ModuleName}.${BusinessName}) {
+        Object.assign(this.data, changed);
+    }
+
+    @computed
+    get changed() {
+        return !equal(this._initialize, this.data);
+    }
+
+    @computed
+    get isEdit() {
+        return !!this.data.${pkColumn.javaField};
+    }
+
+    isDisabled(command: string[]) {
+        if (command.includes("insert") && !this.isEdit) {
+            return false;
+        }
+        if (command.includes("edit") && this.isEdit) {
+            return false;
+        }
+        return true;
+    }
+}
+
+export default function createState(initialize: ${ModuleName}.${BusinessName}) {
+    return () => (new State(initialize));
+};

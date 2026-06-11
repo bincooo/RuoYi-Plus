@@ -24,11 +24,11 @@ public class GenUtils {
      */
     public static void initTable(GenTable genTable) {
         genTable.setClassName(convertClassName(genTable.getTableName()));
-        genTable.setPackageName(GenConfig.getPackageName());
-        genTable.setModuleName(getModuleName(GenConfig.getPackageName()));
+        genTable.setPackageName(GenConfig.packageName);
+        genTable.setModuleName(getModuleName(GenConfig.packageName));
         genTable.setBusinessName(getBusinessName(genTable.getTableName()));
         genTable.setFunctionName(replaceText(genTable.getTableComment()));
-        genTable.setFunctionAuthor(GenConfig.getAuthor());
+        genTable.setFunctionAuthor(GenConfig.author);
         genTable.setCreateTime(null);
         genTable.setUpdateTime(null);
     }
@@ -153,7 +153,7 @@ public class GenUtils {
      */
     public static String convertClassName(String tableName) {
         boolean autoRemovePre = GenConfig.getAutoRemovePre();
-        String tablePrefix = GenConfig.getTablePrefix();
+        String tablePrefix = GenConfig.tablePrefix;
         if (autoRemovePre && StringUtils.isNotEmpty(tablePrefix)) {
             String[] searchList = StringUtils.split(tablePrefix, StringUtils.SEPARATOR);
             tableName = replaceFirst(tableName, searchList);

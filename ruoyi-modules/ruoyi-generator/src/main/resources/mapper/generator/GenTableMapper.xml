@@ -7,6 +7,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     <!-- 多结构嵌套自动映射需带上每个实体的主键id 否则映射会失败 -->
     <resultMap type="org.dromara.generator.domain.GenTable" id="GenTableResult">
         <id property="tableId" column="table_id" />
+        <result property="options" column="options" typeHandler="org.dromara.generator.domain.OptionsTypeHandler"/>
         <collection property="columns" javaType="java.util.List" resultMap="GenTableColumnResult" />
     </resultMap>
 

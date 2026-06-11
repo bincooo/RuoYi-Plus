@@ -22,7 +22,7 @@ server:
 
 captcha:
   # 是否启用验证码校验
-  enable: true
+  enable: false
   # 验证码类型 math 数组计算 char 字符验证
   type: math
   # 数字验证码位数
@@ -116,6 +116,8 @@ security:
     - /*/api-docs
     - /*/api-docs/**
     - /warm-flow-ui/config
+    - /tool/file/readFiles
+    - /tool/file/saveFile
 
 # 多租户配置
 tenant:
@@ -215,6 +217,7 @@ xss:
   # 排除链接
   excludeUrls:
     - /system/notice
+    - /tool/file/saveFile
 
 --- # 分布式锁 lock4j 全局配置
 lock4j:
@@ -261,3 +264,16 @@ warm-flow:
   node-tooltip: true
   # 默认Authorization，如果有多个token，用逗号分隔
   token-name: ${sa-token.token-name},clientid
+
+nodejs:
+  baseDir: /home/bincooo/workspaces/node/20260405/react-antd-admin
+  filter:
+    /libs/,
+    /src/components/basic-content/,
+    /src/components/basic-table/,
+    /src/components/modal-search/,
+    /src/components/pro-fields.tsx,
+    /src/locales/,
+    /src/utils/,
+    /src/api/,
+    /src/types/

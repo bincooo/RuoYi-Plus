@@ -1,7 +1,10 @@
 package org.dromara.system.domain.vo;
 
-import org.dromara.common.core.utils.StringUtils;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import lombok.Builder;
 import lombok.Data;
+
+import java.util.List;
 
 /**
  * 路由显示信息
@@ -10,6 +13,7 @@ import lombok.Data;
  */
 
 @Data
+@Builder
 public class MetaVo {
 
     /**
@@ -23,56 +27,31 @@ public class MetaVo {
     private String icon;
 
     /**
+     * 是否隐藏路由，当设置 true 的时候该路由不会再侧边栏出现
+     */
+    private Boolean hideInMenu;
+
+    /**
      * 设置为true，则不会被 <keep-alive>缓存
      */
-    private Boolean noCache;
+    private Boolean keepAlive;
 
     /**
      * 内链地址（http(s)://开头）
      */
-    private String link;
+    private String iframeLink;
 
     /**
      * 激活菜单
      */
     private String activeMenu;
 
-    public MetaVo(String title, String icon) {
-        this.title = title;
-        this.icon = icon;
-    }
+    /**
+     * 菜单排序，用于控制侧边栏菜单的显示顺序。
+     */
+    private Integer order;
 
-    public MetaVo(String title, String icon, Boolean noCache) {
-        this.title = title;
-        this.icon = icon;
-        this.noCache = noCache;
-    }
-
-    public MetaVo(String title, String icon, String link) {
-        this.title = title;
-        this.icon = icon;
-        this.link = link;
-    }
-
-    public MetaVo(String title, String icon, Boolean noCache, String link) {
-        this.title = title;
-        this.icon = icon;
-        this.noCache = noCache;
-        if (StringUtils.ishttp(link)) {
-            this.link = link;
-        }
-    }
-
-    public MetaVo(String title, String icon, Boolean noCache, String link, String activeMenu) {
-        this.title = title;
-        this.icon = icon;
-        this.noCache = noCache;
-        if (StringUtils.ishttp(link)) {
-            this.link = link;
-        }
-        if (StringUtils.startWithAnyIgnoreCase(activeMenu, "/")) {
-            this.activeMenu = activeMenu;
-        }
-    }
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private List<String> permissions;
 
 }

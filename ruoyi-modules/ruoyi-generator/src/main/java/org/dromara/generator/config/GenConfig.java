@@ -35,17 +35,19 @@ public class GenConfig {
      */
     public static String tablePrefix;
 
-    public static String getAuthor() {
-        return author;
-    }
+    /**
+     * 后端模板生成路径
+     */
+    public static String javaPath;
+
+    /**
+     * 前端模板生成路径
+     */
+    public static String reactPath;
 
     @Value("${author}")
     public void setAuthor(String author) {
         GenConfig.author = author;
-    }
-
-    public static String getPackageName() {
-        return packageName;
     }
 
     @Value("${packageName}")
@@ -62,12 +64,19 @@ public class GenConfig {
         GenConfig.autoRemovePre = autoRemovePre;
     }
 
-    public static String getTablePrefix() {
-        return tablePrefix;
-    }
-
     @Value("${tablePrefix}")
     public void setTablePrefix(String tablePrefix) {
         GenConfig.tablePrefix = tablePrefix;
+    }
+
+
+    @Value("${javaPath}")
+    public void setJavaPath(String javaPath) {
+        GenConfig.javaPath = javaPath;
+    }
+
+    @Value("${reactPath}")
+    public void setReactPath(String reactPath) {
+        GenConfig.reactPath = reactPath;
     }
 }

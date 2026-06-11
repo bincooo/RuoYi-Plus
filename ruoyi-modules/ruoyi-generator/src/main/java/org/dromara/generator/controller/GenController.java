@@ -58,10 +58,10 @@ public class GenController extends BaseController {
     public R<Map<String, Object>> getInfo(@PathVariable Long tableId) {
         GenTable table = genTableService.selectGenTableById(tableId);
         List<GenTable> tables = genTableService.selectGenTableAll();
-        List<GenTableColumn> list = genTableService.selectGenTableColumnListByTableId(tableId);
+//        List<GenTableColumn> list = genTableService.selectGenTableColumnListByTableId(tableId);
         Map<String, Object> map = new HashMap<>(3);
         map.put("info", table);
-        map.put("rows", list);
+//        map.put("rows", list);
         map.put("tables", tables);
         return R.ok(map);
     }

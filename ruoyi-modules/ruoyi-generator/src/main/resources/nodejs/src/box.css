@@ -1,0 +1,9 @@
+.designer .dnd-box::after {
+    content: "拖入替换";
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    aspect-ratio: 3 / 1;
+    color: #b6b6b6;
+    border: 1px dashed #c2c2c2;
+}

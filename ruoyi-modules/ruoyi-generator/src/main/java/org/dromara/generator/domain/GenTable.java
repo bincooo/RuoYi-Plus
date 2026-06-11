@@ -12,7 +12,9 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+import java.io.Serializable;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 业务表 gen_table
@@ -22,7 +24,7 @@ import java.util.List;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
-@TableName("gen_table")
+@TableName(value = "gen_table", autoResultMap = true)
 public class GenTable extends BaseEntity {
 
     /**
@@ -127,7 +129,8 @@ public class GenTable extends BaseEntity {
     /**
      * 其它生成选项
      */
-    private String options;
+    @TableField(value = "options", typeHandler = OptionsTypeHandler.class)
+    private Map<String, Object> options;
 
     /**
      * 备注

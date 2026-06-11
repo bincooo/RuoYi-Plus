@@ -7,6 +7,7 @@ import org.dromara.system.domain.vo.SysDictDataVo;
 import org.dromara.system.domain.vo.SysDictTypeVo;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * 字典 业务层
@@ -46,6 +47,14 @@ public interface ISysDictTypeService {
      * @return 字典数据集合信息
      */
     List<SysDictDataVo> selectDictDataByType(String dictType);
+
+    /**
+     * 根据字典类型查询字典数据
+     *
+     * @param dictTypes 字典类型集合
+     * @return 字典数据集合信息
+     */
+    Map<String, List<SysDictDataVo>> selectDictDataByTypes(String[] dictTypes);
 
     /**
      * 根据字典类型ID查询信息
