@@ -131,7 +131,7 @@ public class VelocityUtils {
         }
         templates.add("vm/ts/api.ts.vm");
         templates.add("vm/ts/types.ts.vm");
-        templates.add("vm/pages/columns.ts.vm");
+        templates.add("vm/pages/columns.tsx.vm");
         if (GenConstants.TPL_CRUD.equals(tplCategory)) {
             templates.add("vm/pages/index.tsx.vm");
             templates.add("vm/pages/components/edit.tsx.vm");
@@ -188,8 +188,8 @@ public class VelocityUtils {
             fileName = StringUtils.format("types/{}/{}.d.ts", moduleName, businessName);
         } else if (template.contains("pages/index.tsx.vm")) {
             fileName = StringUtils.format("pages/{}/{}/index.tsx", moduleName, businessName);
-        } else if (template.contains("pages/columns.ts.vm")) {
-            fileName = StringUtils.format("pages/{}/{}/columns.ts", moduleName, businessName);
+        } else if (template.contains("pages/columns.tsx.vm")) {
+            fileName = StringUtils.format("pages/{}/{}/columns.tsx", moduleName, businessName);
         } else if (template.contains("pages/components/edit.tsx.vm")) {
             fileName = StringUtils.format("pages/{}/{}/components/edit.tsx", moduleName, businessName);
         } else if (template.contains("pages/mobx/edit.ts.vm")) {

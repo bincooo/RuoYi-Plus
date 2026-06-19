@@ -1,5 +1,8 @@
 {
-  "designerConfig": { "autoGenerateComponentId": false },
+  "designerConfig": {
+    "autoFormatCode": true,
+    "autoGenerateComponentId": false
+  },
   "packages": {
     "@loccdn/antd": {
       "description": "低代码中后台应用基础物料",
@@ -8,35 +11,24 @@
       "type": "baseDependency",
       "designerResources": ["https://tango.1micro.top/components/designer.js"]
     },
+    "@bingco/react-reject": {
+      "description": "低代码标记注入器",
+      "version": "1.0.1-dev14",
+      "type": "baseDependency"
+    },
     "react": {
-      "version": "19.2.5",
+      "version": "19.2.7",
       "type": "baseDependency"
     },
     "react-dom": {
-      "version": "19.2.5",
+      "version": "19.2.7",
       "type": "baseDependency"
-    },
-    "antd": {
-      "version": "6.3.7",
-      "type": "dependency"
-    },
-    "@ant-design/icons": {
-      "version": "6.2.2",
-      "type": "dependency"
-    },
-    "clsx": { "version": "2.1.1", "library": "clsx", "type": "dependency" },
-    "ky": { "version": "1.14.0", "library": "ky", "type": "dependency" },
-    "@ant-design/pro-components": {
-      "version": "3.1.12-0",
-      "type": "dependency"
-    },
-    "@rc-component/pagination": { "version": "1.2.0" },
-    "@rc-component/picker": { "version": "1.10.0" }
+    }
   },
   "babel": {
     "regex": {
       "@umijs/max": "#libs/mock__@umijs_max",
-      "#src/hooks/use-access": "#libs/mock__access",
+      "#src/hooks/use-([^\"]+)": "#libs/mock__$1",
       "#src/router[^\"]*": "#libs/mock__router",
       "#src/(layout|store)/[^\"]+": "#libs/mock__$1"
     }

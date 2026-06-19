@@ -11,6 +11,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 文件上传 服务层
@@ -76,5 +77,14 @@ public interface ISysOssService {
      * @return 结果
      */
     Boolean deleteWithValidByIds(Collection<Long> ids, Boolean isValid);
+
+    /**
+     * 创建下载请求的预签名URL
+     *
+     * @param checksum 文件哈希值
+     * @param filename 文件名称
+     * @param extension 拓展名
+     */
+    Map<String, Object> createPresigned(String checksum, String filename, String extension);
 
 }

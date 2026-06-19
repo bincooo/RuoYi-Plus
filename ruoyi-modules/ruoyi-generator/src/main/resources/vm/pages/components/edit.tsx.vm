@@ -1,6 +1,7 @@
 import { observer, useLocalObservable } from "mobx-react-lite";
-import { useContext, useEffect } from "react";
+import { useEffect } from "react";
 #set($components = [])
+#set($customComponents = [])
 #foreach($column in $columns)
 #if($column.htmlType == "input")
     #if(!$components.contains("ProFormText"))
@@ -26,6 +27,18 @@ import { useContext, useEffect } from "react";
     #if(!$components.contains("ProFormDatePicker"))
         #set($ig = $components.add("ProFormDatePicker"))
     #end
+#elseif($column.htmlType == "modalSearch")
+    #if(!$customComponents.contains("ProModalSearchField"))
+        #set($ig = $customComponents.add("ProModalSearchField"))
+    #end
+#elseif($column.htmlType == "codeMirror")
+    #if(!$customComponents.contains("ProCodeMirrorField"))
+        #set($ig = $customComponents.add("ProCodeMirrorField"))
+    #end
+#else
+    #if(!$components.contains("ProFormText"))
+        #set($ig = $components.add("ProFormText"))
+    #end
 #end
 #end
 import {
@@ -34,15 +47,23 @@ import {
     $component,
 #end
 } from "@ant-design/pro-components";
-import { Form } from "antd";
+
+import { Form, Upload } from "antd";
 import { useQueries, useMutation } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
+
+#foreach($component in $customComponents)
+#if($component == "ProModalSearchField")
+import { ProModalSearchField } from "#src/components/modal-search";
+#elseif($component == "ProCodeMirrorField")
+import { ProCodeMirrorField } from "#src/components/code-mirror";
+#end
+#end
 import createState from "../mobx/edit";
 import * as api from "#src/api/${moduleName}/${businessName}";
 
 interface EditProps {
-    title?: string
-    ${pkColumn.javaField}?: string | number
+    pkId?: string | number
     dictMap?: {
         [k: string]: {
             label: string
@@ -54,26 +75,28 @@ interface EditProps {
     onClose?: (refresh?: boolean) => void
 }
 
-export default observer(({ ${pkColumn.javaField},#if($dicts != "") dictMap,#end open = true, onClose, ...props }: EditProps) => {
+export default observer(({ pkId,#if($dicts != "") dictMap,#end open = true, onClose, ...props }: EditProps) => {
     const { t } = useTranslation();
     const [form] = Form.useForm<${ModuleName}.${BusinessName}>();
-    const context = useLocalObservable(createState({ ${pkColumn.javaField} }));
+    const context = useLocalObservable(createState({ ${pkColumn.javaField}: pkId }));
 
-    const [${businessName}Data] = useQueries({
+    /** 加载数据 */
+    const [${businessName}] = useQueries({
         queries: [
             {
-                queryKey: ["form", ${pkColumn.javaField}],
+                queryKey: ["form", pkId],
                 queryFn: async () => {
-                    if (!${pkColumn.javaField}) {
+                    if (!pkId) {
                         return null;
                     }
-                    const { data } = await api.getById(${pkColumn.javaField});
+                    const { data } = await api.getById(pkId);
                     return data;
                 }
             },
         ]
     });
 
+    /** 创建接口 */
     const createMutation = useMutation({
         mutationFn: async (data: ${ModuleName}.${BusinessName}) => {
             const { code, message } = await api.create(data);
@@ -84,6 +107,7 @@ export default observer(({ ${pkColumn.javaField},#if($dicts != "") dictMap,#end 
         },
     });
 
+    /** 更新接口 */
     const updateMutation = useMutation({
         mutationFn: async (data: ${ModuleName}.${BusinessName}) => {
             const { code, message } = await api.update(data);
@@ -96,7 +120,7 @@ export default observer(({ ${pkColumn.javaField},#if($dicts != "") dictMap,#end 
 
     const onFinish = async (values: ${ModuleName}.${BusinessName}) => {
         /* 有 id 则为修改，否则为新增 */
-        if (${pkColumn.javaField}) {
+        if (pkId) {
             await updateMutation.mutateAsync({ ...form.getFieldsValue(true) });
             window.$message?.success(t("common.updateSuccess"));
         }
@@ -112,19 +136,20 @@ export default observer(({ ${pkColumn.javaField},#if($dicts != "") dictMap,#end 
 
     useEffect(() => {
         if (open) {
-            if (${businessName}Data.data) {
-                form.setFieldsValue(${businessName}Data.data);
-                context.update(${businessName}Data.data);
+            if (${businessName}.data) {
+                form.setFieldsValue(${businessName}.data);
+                context.update(${businessName}.data);
                 return;
             }
             form.resetFields();
         }
-    }, [open, ${businessName}Data.data]);
+    }, [open, ${businessName}.data]);
 
     return (
         <DrawerForm<${ModuleName}.${BusinessName}>
             {...props}
             open={open}
+            title={pkId ? "编辑${functionName}" : "创建${functionName}"}
             onValuesChange={(changed) => context.update(changed)}
             onOpenChange={(visible) => {
                 if (visible === false) {
@@ -169,12 +194,15 @@ export default observer(({ ${pkColumn.javaField},#if($dicts != "") dictMap,#end 
                     { required: true },
                 ]}
                 #end
-            #if($column.dictType != "")
+                #if($column.dictType != "")
                 options={dictMap?.["$column.dictType"]}
-            #elseif($column.readConverterExp() != "")
+                #elseif($column.readConverterExp() != "")
                 options={[
-                    $column.readConverterExp()]}
-            #end
+                #foreach($opt in $column.readConverterOpt())
+                    { value: "$opt.value", label: "$opt.label" },
+                #end
+                ]}
+                #end
             />
         #elseif($column.htmlType == "select")
             <ProFormSelect
@@ -190,7 +218,7 @@ export default observer(({ ${pkColumn.javaField},#if($dicts != "") dictMap,#end 
                 #end
                 #if($column.dictType != "")
                 options={dictMap?.["$column.dictType"]}
-                #else
+                #elseif($column.readConverterExp() != "")
                 options={[
                 #foreach($opt in $column.readConverterOpt())
                     { value: "$opt.value", label: "$opt.label" },
@@ -236,6 +264,40 @@ export default observer(({ ${pkColumn.javaField},#if($dicts != "") dictMap,#end 
                     { required: true },
                 ]}
                 #end
+            />
+        #elseif($column.htmlType == "codeMirror")
+            <ProCodeMirrorField
+                name="$field"
+                label="$comment"
+                placeholder="请输入$comment"
+                readonly={context.isDisabled([ #if($column.insert)'insert',#end #if($column.edit)'edit',#end ])}
+                language="javascript"
+                #if($column.isRequired == "1")
+                rules={[
+                    { required: true },
+                ]}
+                #end
+            />
+        #elseif($column.htmlType == "imageUpload")
+            <ProFormUploadButton
+                name="$field"
+                label="$comment"
+                placeholder="请输入$comment"
+                readonly={context.isDisabled([ #if($column.insert)'insert',#end #if($column.edit)'edit',#end ])}
+                #if($column.isRequired == "1")
+                rules={[
+                    { required: true },
+                ]}
+                #end
+                fieldProps={{
+                    beforeUpload: (file) => {
+                        const isPNG = file.type === "image/png";
+                        if (!isPNG) {
+                            window.$message?.error(`${file.name} 不是一个图片文件`);
+                        }
+                        return isPNG || Upload.LIST_IGNORE;
+                    }
+                }}
             />
         #else
             <ProFormText

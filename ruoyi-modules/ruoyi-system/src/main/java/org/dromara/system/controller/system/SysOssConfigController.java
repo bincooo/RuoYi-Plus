@@ -40,9 +40,9 @@ public class SysOssConfigController extends BaseController {
     /**
      * 查询对象存储配置列表
      */
-    @SaCheckPermission("system:ossConfig:list")
-    @GetMapping("/list")
-    public TableDataInfo<SysOssConfigVo> list(@Validated(QueryGroup.class) SysOssConfigBo bo, PageQuery pageQuery) {
+    @SaCheckPermission("system:ossConfig:page")
+    @GetMapping("/page")
+    public TableDataInfo<SysOssConfigVo> page(@Validated(QueryGroup.class) SysOssConfigBo bo, PageQuery pageQuery) {
         return ossConfigService.queryPageList(bo, pageQuery);
     }
 

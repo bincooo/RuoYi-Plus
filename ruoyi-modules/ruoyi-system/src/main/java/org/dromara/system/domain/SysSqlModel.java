@@ -11,12 +11,12 @@ import java.io.Serial;
  * sql模型对象 sys_sql_model
  *
  * @author Lion Li
- * @date 2026-06-08
+ * @date 2026-06-14
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
 @TableName("sys_sql_model")
-public class SqlModel extends TenantEntity {
+public class SysSqlModel extends TenantEntity {
 
     @Serial
     private static final long serialVersionUID = 1L;
@@ -28,24 +28,24 @@ public class SqlModel extends TenantEntity {
     private String id;
 
     /**
-     * 模型名称
-     */
-    private String name;
-
-    /**
-     * 主键类型（0数值 1字符）
-     */
-    private String javaType;
-
-    /**
      * sql语句
      */
     private String sqlText;
 
     /**
-     * 模型描述
+     * 模型名称
      */
-    private String description;
+    private String name;
+
+    /**
+     * 描述
+     */
+    private String remark;
+
+    /**
+     * 主键类型（0数值 1字符）
+     */
+    private String javaType;
 
 
 }

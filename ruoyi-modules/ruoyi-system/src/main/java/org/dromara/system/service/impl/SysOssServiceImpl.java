@@ -2,6 +2,7 @@ package org.dromara.system.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.convert.Convert;
+import cn.hutool.core.lang.UUID;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
@@ -280,5 +281,34 @@ public class SysOssServiceImpl implements ISysOssService, OssService {
             oss.setUrl(storage.createPresignedGetUrl(oss.getFileName(), Duration.ofSeconds(120)));
         }
         return oss;
+    }
+
+    /**
+     * 创建下载请求的预签名URL
+     *
+     * @param checksum 文件哈希值
+     * @param filename 文件名称
+     * @param extension 拓展名
+     */
+    @Override
+    public Map<String, Object> createPresigned(String checksum, String filename, String extension) {
+        String objectKey = UUID.randomUUID().toString().replace("-", "");
+        if (!StringUtils.isEmpty(extension)) {
+            objectKey += "." + extension;
+        }
+
+        OssClient storage = OssFactory.instance();
+        Duration expired = Duration.ofMinutes(10);
+        Map<String, String> metadata = Map.of("filename", filename, "extension", extension);
+        String url = storage.createPresignedPutUrl(objectKey, checksum, expired, metadata);
+        return Map.of(
+            "url", url,
+            "method", "PUT",
+            "expires", expired.getSeconds(),
+            "headers", Map.of(
+                "x-amz-meta-filename", filename,
+                "x-amz-meta-extension", extension,
+                "x-amz-checksum-crc32", checksum
+            ));
     }
 }

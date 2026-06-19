@@ -375,6 +375,28 @@ public class OssClient {
     }
 
     /**
+     * 创建上传请求的预签名URL
+     *
+     * @param objectKey   对象KEY
+     * @param expiredTime 链接授权到期时间
+     * @param metadata    元数据
+     */
+    public String createPresignedPutUrl(String objectKey, String crc32, Duration expiredTime, Map<String, String> metadata) {
+        // 使用 AWS S3 预签名 URL 的生成器 获取上传文件对象的预签名 URL
+        URL url = presigner.presignPutObject(
+                x -> x.signatureDuration(expiredTime)
+                    .putObjectRequest(
+                        y -> y.bucket(properties.getBucketName())
+                            .key(objectKey)
+                            .metadata(metadata)
+                            .checksumCRC32(crc32)
+                            .build())
+                    .build())
+            .url();
+        return url.toExternalForm();
+    }
+
+    /**
      * 上传 byte[] 数据到 Amazon S3，使用指定的后缀构造对象键。
      *
      * @param data   要上传的 byte[] 数据

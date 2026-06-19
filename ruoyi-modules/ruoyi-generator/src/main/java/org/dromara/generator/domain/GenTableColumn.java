@@ -122,6 +122,12 @@ public class GenTableColumn extends BaseEntity {
     private String dictType;
 
     /**
+     * SQL模型ID
+     */
+    @TableField(updateStrategy = FieldStrategy.ALWAYS, jdbcType = JdbcType.VARCHAR)
+    private String searchId;
+
+    /**
      * 排序
      */
     private Integer sort;

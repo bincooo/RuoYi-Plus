@@ -5,25 +5,34 @@ import type { JSX } from "react";
 import type { ProColumns } from "@ant-design/pro-components";
 import type { TFunction } from "i18next";
 
-type DictData = {
+#if(${dicts} != "")
+type Dict = {
     label: string | JSX.Element;
     value: string | number;
     desc?: string;
 };
+#end
 
-type Merger<T> = (option: T) => T;
+type Merger<T extends { dataIndex: string }> = (option: T) => T;
 
-function merge<T>(columns: (T & { dataIndex: string })[], options?: { [column: string]: Merger<T & { dataIndex: string }> }): T[] {
-    for (const i in columns) {
-        const instance = options?.[columns[i].dataIndex];
-        if (instance) {
-            columns[i] = instance({ ...columns[i] });
+function merge<T extends { dataIndex: string }>(
+    columns: (T & { dataIndex: string })[],
+    options?: { [column: string]: Merger<T> },
+): T[] {
+    for (const idx in columns) {
+        const exec = options?.[columns[idx].dataIndex];
+        if (exec) {
+            columns[idx] = exec({ ...columns[idx] });
         }
     }
     return columns;
 }
 
-export function getColumnList(t: TFunction<"translation", undefined>, options?: { [column: string]: Merger<ProColumns<${ModuleName}.${BusinessName}> & { dataIndex: string }> }#if(${dicts} != ""), dictMap?: { [column: string]: DictData[] }#end): ProColumns<${ModuleName}.${BusinessName}>[] {
+export function getColumnList(
+    t: TFunction<"translation", undefined>,
+    options?: { [column: string]: Merger<ProColumns<${ModuleName}.${BusinessName}> & { dataIndex: string }> },
+    #if(${dicts} != "")dictMap?: { [column: string]: Dict[] }#end
+): ProColumns<${ModuleName}.${BusinessName}>[] {
     return merge([
         {
             dataIndex: "index",
@@ -49,6 +58,9 @@ export function getColumnList(t: TFunction<"translation", undefined>, options?: 
             search: false,
             #end
             proFieldProps: {
+            #if($column.htmlType == "modalSearch")
+                searchId: "$column.searchId",
+            #end
                 placeholder: "请输入$comment",
             },
             #if($column.htmlType == "select" || $column.htmlType == "radio" || $column.htmlType == "checkbox")
@@ -68,6 +80,19 @@ export function getColumnList(t: TFunction<"translation", undefined>, options?: 
             #end
             #elseif($column.htmlType == "datetime")
             valueType: "date",
+            #elseif($column.htmlType == "modalSearch")
+            valueType: "modalSearch" as any,
+            #elseif($column.htmlType == "imageUpload")
+            render: (_, record) => {
+                const isList = typeof(record.${column.javaField}) !== 'string';
+                return <>
+                    {isList ?
+                        record.${column.javaField}.map(item => (<img src={item} />))
+                        :
+                        <img src={record.${column.javaField}} />
+                    }
+                </>
+            }
             #end
         },
     #end

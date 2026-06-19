@@ -45,7 +45,7 @@ public class ${ClassName}Controller extends BaseController {
     @SaCheckPermission("${permissionPrefix}:page")
     @GetMapping("/page")
 #if($table.crud)
-    public TableDataInfo<${ClassName}Vo> list(${ClassName}Bo bo, PageQuery pageQuery) {
+    public TableDataInfo<${ClassName}Vo> page(${ClassName}Bo bo, PageQuery pageQuery) {
         return ${className}Service.queryPageList(bo, pageQuery);
     }
 #elseif($table.tree)

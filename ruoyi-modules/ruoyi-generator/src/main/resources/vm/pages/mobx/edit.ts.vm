@@ -1,6 +1,9 @@
 import { action, makeObservable, observable, computed } from "mobx";
 import equal from 'fast-deep-equal';
 
+/**
+ * 编辑页状态管理
+ */
 class State {
 
     private readonly _initialize: ${ModuleName}.${BusinessName};

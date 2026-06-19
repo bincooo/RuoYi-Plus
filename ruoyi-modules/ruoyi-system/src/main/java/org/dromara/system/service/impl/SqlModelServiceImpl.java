@@ -9,11 +9,11 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.dromara.system.domain.bo.SysSqlModelBo;
 import org.dromara.system.domain.vo.SqlQueryVo;
+import org.dromara.system.domain.vo.SysSqlModelVo;
 import org.springframework.stereotype.Service;
-import org.dromara.system.domain.bo.SqlModelBo;
-import org.dromara.system.domain.vo.SqlModelVo;
-import org.dromara.system.domain.SqlModel;
+import org.dromara.system.domain.SysSqlModel;
 import org.dromara.system.mapper.SqlModelMapper;
 import org.dromara.system.service.ISqlModelService;
 
@@ -39,7 +39,7 @@ public class SqlModelServiceImpl implements ISqlModelService {
      * @return sql模型
      */
     @Override
-    public SqlModelVo queryById(String id){
+    public SysSqlModelVo queryById(String id){
         return baseMapper.selectVoById(id);
     }
 
@@ -51,9 +51,9 @@ public class SqlModelServiceImpl implements ISqlModelService {
      * @return sql模型分页列表
      */
     @Override
-    public TableDataInfo<SqlModelVo> queryPageList(SqlModelBo bo, PageQuery pageQuery) {
-        LambdaQueryWrapper<SqlModel> lqw = buildQueryWrapper(bo);
-        Page<SqlModelVo> result = baseMapper.selectVoPage(pageQuery.build(), lqw);
+    public TableDataInfo<SysSqlModelVo> queryPageList(SysSqlModelBo bo, PageQuery pageQuery) {
+        LambdaQueryWrapper<SysSqlModel> lqw = buildQueryWrapper(bo);
+        Page<SysSqlModelVo> result = baseMapper.selectVoPage(pageQuery.build(), lqw);
         return TableDataInfo.build(result);
     }
 
@@ -64,17 +64,17 @@ public class SqlModelServiceImpl implements ISqlModelService {
      * @return sql模型列表
      */
     @Override
-    public List<SqlModelVo> queryList(SqlModelBo bo) {
-        LambdaQueryWrapper<SqlModel> lqw = buildQueryWrapper(bo);
+    public List<SysSqlModelVo> queryList(SysSqlModelBo bo) {
+        LambdaQueryWrapper<SysSqlModel> lqw = buildQueryWrapper(bo);
         return baseMapper.selectVoList(lqw);
     }
 
-    private LambdaQueryWrapper<SqlModel> buildQueryWrapper(SqlModelBo bo) {
+    private LambdaQueryWrapper<SysSqlModel> buildQueryWrapper(SysSqlModelBo bo) {
         Map<String, Object> params = bo.getParams();
-        LambdaQueryWrapper<SqlModel> lqw = Wrappers.lambdaQuery();
-        lqw.eq(StringUtils.isNotBlank(bo.getId()), SqlModel::getId, bo.getId());
-        lqw.orderByAsc(SqlModel::getId);
-        lqw.like(StringUtils.isNotBlank(bo.getName()), SqlModel::getName, bo.getName());
+        LambdaQueryWrapper<SysSqlModel> lqw = Wrappers.lambdaQuery();
+        lqw.eq(StringUtils.isNotBlank(bo.getId()), SysSqlModel::getId, bo.getId());
+        lqw.orderByAsc(SysSqlModel::getId);
+        lqw.like(StringUtils.isNotBlank(bo.getName()), SysSqlModel::getName, bo.getName());
         return lqw;
     }
 
@@ -85,8 +85,8 @@ public class SqlModelServiceImpl implements ISqlModelService {
      * @return 是否新增成功
      */
     @Override
-    public Boolean insertByBo(SqlModelBo bo) {
-        SqlModel add = MapstructUtils.convert(bo, SqlModel.class);
+    public Boolean insertByBo(SysSqlModelBo bo) {
+        SysSqlModel add = MapstructUtils.convert(bo, SysSqlModel.class);
         validEntityBeforeSave(add);
         boolean flag = baseMapper.insert(add) > 0;
         if (flag) {
@@ -102,8 +102,8 @@ public class SqlModelServiceImpl implements ISqlModelService {
      * @return 是否修改成功
      */
     @Override
-    public Boolean updateByBo(SqlModelBo bo) {
-        SqlModel update = MapstructUtils.convert(bo, SqlModel.class);
+    public Boolean updateByBo(SysSqlModelBo bo) {
+        SysSqlModel update = MapstructUtils.convert(bo, SysSqlModel.class);
         validEntityBeforeSave(update);
         return baseMapper.updateById(update) > 0;
     }
@@ -111,7 +111,7 @@ public class SqlModelServiceImpl implements ISqlModelService {
     /**
      * 保存前的数据校验
      */
-    private void validEntityBeforeSave(SqlModel entity){
+    private void validEntityBeforeSave(SysSqlModel entity){
         //TODO 做一些数据校验,如唯一约束
     }
 
@@ -132,7 +132,7 @@ public class SqlModelServiceImpl implements ISqlModelService {
 
     @Override
     public TableDataInfo<SqlQueryVo> executeSql(String id, Map<String, Object> params, PageQuery pageQuery) {
-        SqlModelVo sqlModelVo = baseMapper.selectVoById(id);
+        SysSqlModelVo sqlModelVo = baseMapper.selectVoById(id);
         if (sqlModelVo == null) {
             throw new IllegalArgumentException("标识符不存在");
         }

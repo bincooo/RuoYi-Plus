@@ -1,8 +1,8 @@
 package org.dromara.system.service;
 
 import jakarta.validation.constraints.NotEmpty;
-import org.dromara.system.domain.vo.SqlModelVo;
-import org.dromara.system.domain.bo.SqlModelBo;
+import org.dromara.system.domain.bo.SysSqlModelBo;
+import org.dromara.system.domain.vo.SysSqlModelVo;
 import org.dromara.common.mybatis.core.page.TableDataInfo;
 import org.dromara.common.mybatis.core.page.PageQuery;
 import org.dromara.system.domain.vo.SqlQueryVo;
@@ -25,7 +25,7 @@ public interface ISqlModelService {
      * @param id 主键
      * @return sql模型
      */
-    SqlModelVo queryById(String id);
+    SysSqlModelVo queryById(String id);
 
     /**
      * 分页查询sql模型列表
@@ -34,7 +34,7 @@ public interface ISqlModelService {
      * @param pageQuery 分页参数
      * @return sql模型分页列表
      */
-    TableDataInfo<SqlModelVo> queryPageList(SqlModelBo bo, PageQuery pageQuery);
+    TableDataInfo<SysSqlModelVo> queryPageList(SysSqlModelBo bo, PageQuery pageQuery);
 
     /**
      * 查询符合条件的sql模型列表
@@ -42,7 +42,7 @@ public interface ISqlModelService {
      * @param bo 查询条件
      * @return sql模型列表
      */
-    List<SqlModelVo> queryList(SqlModelBo bo);
+    List<SysSqlModelVo> queryList(SysSqlModelBo bo);
 
     /**
      * 新增sql模型
@@ -50,7 +50,7 @@ public interface ISqlModelService {
      * @param bo sql模型
      * @return 是否新增成功
      */
-    Boolean insertByBo(SqlModelBo bo);
+    Boolean insertByBo(SysSqlModelBo bo);
 
     /**
      * 修改sql模型
@@ -58,7 +58,7 @@ public interface ISqlModelService {
      * @param bo sql模型
      * @return 是否修改成功
      */
-    Boolean updateByBo(SqlModelBo bo);
+    Boolean updateByBo(SysSqlModelBo bo);
 
     /**
      * 校验并批量删除sql模型信息

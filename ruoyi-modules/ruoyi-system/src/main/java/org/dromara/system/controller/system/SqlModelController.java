@@ -7,7 +7,9 @@ import lombok.RequiredArgsConstructor;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.constraints.*;
 import cn.dev33.satoken.annotation.SaCheckPermission;
+import org.dromara.system.domain.bo.SysSqlModelBo;
 import org.dromara.system.domain.vo.SqlQueryVo;
+import org.dromara.system.domain.vo.SysSqlModelVo;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.validation.annotation.Validated;
 import org.dromara.common.idempotent.annotation.RepeatSubmit;
@@ -19,8 +21,6 @@ import org.dromara.common.core.validate.AddGroup;
 import org.dromara.common.core.validate.EditGroup;
 import org.dromara.common.log.enums.BusinessType;
 import org.dromara.common.excel.utils.ExcelUtil;
-import org.dromara.system.domain.vo.SqlModelVo;
-import org.dromara.system.domain.bo.SqlModelBo;
 import org.dromara.system.service.ISqlModelService;
 import org.dromara.common.mybatis.core.page.TableDataInfo;
 
@@ -43,7 +43,7 @@ public class SqlModelController extends BaseController {
      */
     @SaCheckPermission("system:sqlModel:page")
     @GetMapping("/page")
-    public TableDataInfo<SqlModelVo> list(SqlModelBo bo, PageQuery pageQuery) {
+    public TableDataInfo<SysSqlModelVo> list(SysSqlModelBo bo, PageQuery pageQuery) {
         return sqlModelService.queryPageList(bo, pageQuery);
     }
 
@@ -53,9 +53,9 @@ public class SqlModelController extends BaseController {
     @SaCheckPermission("system:sqlModel:export")
     @Log(title = "sql模型", businessType = BusinessType.EXPORT)
     @PostMapping("/export")
-    public void export(SqlModelBo bo, HttpServletResponse response) {
-        List<SqlModelVo> list = sqlModelService.queryList(bo);
-        ExcelUtil.exportExcel(list, "sql模型", SqlModelVo.class, response);
+    public void export(SysSqlModelBo bo, HttpServletResponse response) {
+        List<SysSqlModelVo> list = sqlModelService.queryList(bo);
+        ExcelUtil.exportExcel(list, "sql模型", SysSqlModelVo.class, response);
     }
 
     /**
@@ -65,7 +65,7 @@ public class SqlModelController extends BaseController {
      */
     @SaCheckPermission("system:sqlModel:page")
     @GetMapping("/{id}")
-    public R<SqlModelVo> getInfo(@NotNull(message = "主键不能为空")
+    public R<SysSqlModelVo> getInfo(@NotNull(message = "主键不能为空")
                                      @PathVariable String id) {
         return R.ok(sqlModelService.queryById(id));
     }
@@ -77,7 +77,7 @@ public class SqlModelController extends BaseController {
     @Log(title = "sql模型", businessType = BusinessType.INSERT)
     @RepeatSubmit()
     @PostMapping()
-    public R<Void> add(@Validated(AddGroup.class) @RequestBody SqlModelBo bo) {
+    public R<Void> add(@Validated(AddGroup.class) @RequestBody SysSqlModelBo bo) {
         return toAjax(sqlModelService.insertByBo(bo));
     }
 
@@ -88,7 +88,7 @@ public class SqlModelController extends BaseController {
     @Log(title = "sql模型", businessType = BusinessType.UPDATE)
     @RepeatSubmit()
     @PutMapping()
-    public R<Void> edit(@Validated(EditGroup.class) @RequestBody SqlModelBo bo) {
+    public R<Void> edit(@Validated(EditGroup.class) @RequestBody SysSqlModelBo bo) {
         return toAjax(sqlModelService.updateByBo(bo));
     }
 

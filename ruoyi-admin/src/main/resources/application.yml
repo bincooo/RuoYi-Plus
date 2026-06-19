@@ -255,7 +255,7 @@ websocket:
 --- # warm-flow工作流配置
 warm-flow:
   # 是否开启工作流，默认true
-  enabled: true
+  enabled: false
   # 是否开启设计器ui
   ui: true
   # 是否显示流程图顶部文字
@@ -269,9 +269,13 @@ nodejs:
   baseDir: /home/bincooo/workspaces/node/20260405/react-antd-admin
   filter:
     /libs/,
+    /src/components/switch-control/,
+    /src/components/permission-button/,
     /src/components/basic-content/,
     /src/components/basic-table/,
     /src/components/modal-search/,
+    /src/components/code-mirror/,
+    /src/components/upload/,
     /src/components/pro-fields.tsx,
     /src/locales/,
     /src/utils/,

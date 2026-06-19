@@ -2,9 +2,8 @@ package org.dromara.system.mapper;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import org.apache.ibatis.annotations.SelectProvider;
-import org.dromara.common.mybatis.core.page.TableDataInfo;
-import org.dromara.system.domain.SqlModel;
-import org.dromara.system.domain.vo.SqlModelVo;
+import org.dromara.system.domain.SysSqlModel;
+import org.dromara.system.domain.vo.SysSqlModelVo;
 import org.dromara.common.mybatis.core.mapper.BaseMapperPlus;
 import org.dromara.system.domain.vo.SqlQueryVo;
 
@@ -17,7 +16,7 @@ import java.util.Map;
  * @author Lion Li
  * @date 2026-06-04
  */
-public interface SqlModelMapper extends BaseMapperPlus<SqlModel, SqlModelVo> {
+public interface SqlModelMapper extends BaseMapperPlus<SysSqlModel, SysSqlModelVo> {
 
     @SelectProvider(type = SqlProvider.class, method = "executeSql")
     List<SqlQueryVo> executeSql(IPage<SqlQueryVo> page, Map<String, Object> params);

@@ -24,6 +24,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 文件上传 控制层
@@ -101,4 +102,18 @@ public class SysOssController extends BaseController {
         return toAjax(ossService.deleteWithValidByIds(List.of(ossIds), true));
     }
 
+    /**
+     * 创建下载请求的预签名URL
+     *
+     * @param checksum 文件哈希值
+     * @param filename 文件名称
+     * @param extension 拓展名
+     */
+    @GetMapping("/presigned")
+    public R<Map<String, Object>> createPresigned(
+        @RequestHeader(value = "x-amz-checksum-crc32") String checksum,
+        @RequestHeader(value = "x-amz-meta-filename") String filename,
+        @RequestHeader(value = "x-amz-meta-extension") String extension) {
+        return R.ok(ossService.createPresigned(checksum, filename, extension));
+    }
 }
