@@ -49,8 +49,8 @@ public class SysTenantController extends BaseController {
      */
     @SaCheckRole(TenantConstants.SUPER_ADMIN_ROLE_KEY)
     @SaCheckPermission("system:tenant:list")
-    @GetMapping("/list")
-    public TableDataInfo<SysTenantVo> list(SysTenantBo bo, PageQuery pageQuery) {
+    @GetMapping("/page")
+    public TableDataInfo<SysTenantVo> page(SysTenantBo bo, PageQuery pageQuery) {
         return tenantService.queryPageList(bo, pageQuery);
     }
 

@@ -23,7 +23,7 @@ import { useEffect } from "react";
     #if(!$components.contains("ProFormDigit"))
         #set($ig = $components.add("ProFormDigit"))
     #end
-#elseif($column.htmlType == "date")
+#elseif($column.htmlType == "datetime")
     #if(!$components.contains("ProFormDatePicker"))
         #set($ig = $components.add("ProFormDatePicker"))
     #end
@@ -252,7 +252,7 @@ export default observer(({ pkId,#if($dicts != "") dictMap,#end open = true, onCl
                 ]}
                 #end
             />
-        #elseif($column.htmlType == "date")
+        #elseif($column.htmlType == "datetime")
             <ProFormDatePicker
                 name="$field"
                 label="$comment"
